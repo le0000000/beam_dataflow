@@ -35,7 +35,7 @@ func main() {
 	pipeline := beam.NewPipeline()
 
 	scope := pipeline.Root()
-	lines := textio.Read(scope, *inputURI)
+	lines := textio.ReadSdf(scope, *inputURI)
 	reshuffledLines := beam.Reshuffle(scope, lines)
 
 	values := beam.ParDo(scope, &parseLineFn{}, reshuffledLines)
