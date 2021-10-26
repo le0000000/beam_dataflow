@@ -4,7 +4,7 @@ import (
 	"context"
 	"flag"
 	"reflect"
-	// "strconv"
+	"strconv"
 
 	"github.com/apache/beam/sdks/go/pkg/beam"
 	"github.com/apache/beam/sdks/go/pkg/beam/io/textio"
