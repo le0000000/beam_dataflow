@@ -33,3 +33,20 @@ go_binary(
         "@com_github_apache_beam//sdks/go/pkg/beam/x/beamx:go_default_library",
     ],
 )
+
+container_image(
+    name = "simplesum_main_image",
+    base = "@base_image//image",
+    entrypoint = ["/simplesum_main"],
+    files = [":simplesum_main"],
+    stamp = True,
+)
+
+container_push(
+    name = "simplesum_main_image_publish",
+    format = "Docker",
+    image = ":simplesum_main_image",
+    registry = "gcr.io",
+    repository = "$(GCR_PROJECT)/browser_simulator",
+    tag = "$(VERSION)",
+)
