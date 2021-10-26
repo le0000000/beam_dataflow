@@ -1,0 +1,219 @@
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+## START - docker toolchain protobuf workaround
+
+http_archive(
+    name = "rules_python",
+    sha256 = "b6d46438523a3ec0f3cead544190ee13223a52f6a6765a29eae7b7cc24cc83a0",
+    urls = ["https://github.com/bazelbuild/rules_python/releases/download/0.1.0/rules_python-0.1.0.tar.gz"],
+)
+## END - docker toolchain protobuf workaround
+
+http_archive(
+    name = "io_bazel_rules_go",
+    sha256 = "8e968b5fcea1d2d64071872b12737bbb5514524ee5f0a4f54f5920266c261acb",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.28.0/rules_go-v0.28.0.zip",
+        "https://github.com/bazelbuild/rules_go/releases/download/v0.28.0/rules_go-v0.28.0.zip",
+    ],
+)
+
+load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
+
+go_rules_dependencies()
+
+go_register_toolchains(version = "1.16")
+
+http_archive(
+    name = "bazel_gazelle",
+    sha256 = "b85f48fa105c4403326e9525ad2b2cc437babaa6e15a3fc0b1dbab0ab064bc7c",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v0.22.2/bazel-gazelle-v0.22.2.tar.gz",
+        "https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.22.2/bazel-gazelle-v0.22.2.tar.gz",
+    ],
+)
+
+load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
+load("//:deps.bzl", "go_dependencies")
+
+# gazelle:repository_macro deps.bzl%go_dependencies
+go_dependencies()
+gazelle_dependencies(go_repository_default_config = "@//:WORKSPACE.bazel")
+
+git_repository(
+    name = "com_google_absl",
+    commit = "0f3bb466b868b523cf1dc9b2aaaed65c77b28862",
+    remote = "https://github.com/abseil/abseil-cpp.git",
+    shallow_since = "1603283562 -0400",
+)
+
+git_repository(
+    name = "private_join_and_compute",
+    commit = "458ea22489f7e0bca193af3b3049a035249d2e84",
+    remote = "https://github.com/google/private-join-and-compute.git",
+)
+
+http_archive(
+    name = "com_github_glog_glog",
+    sha256 = "cbba86b5a63063999e0fc86de620a3ad22d6fd2aa5948bff4995dcd851074a0b",
+    strip_prefix = "glog-c8f8135a5720aee7de8328b42e4c43f8aa2e60aa",
+    urls = ["https://github.com/google/glog/archive/c8f8135a5720aee7de8328b42e4c43f8aa2e60aa.zip"],
+)
+
+http_archive(
+    name = "com_github_grpc_grpc",
+    sha256 = "2060769f2d4b0d3535ba594b2ab614d7f68a492f786ab94b4318788d45e3278a",
+    strip_prefix = "grpc-1.33.2",
+    urls = [
+        "https://github.com/grpc/grpc/archive/v1.33.2.tar.gz",
+    ],
+)
+
+load("@com_github_grpc_grpc//bazel:grpc_deps.bzl", "grpc_deps")
+
+grpc_deps()
+
+load("@com_github_grpc_grpc//bazel:grpc_extra_deps.bzl", "grpc_extra_deps")
+
+grpc_extra_deps()
+
+http_archive(
+    name = "tink_base",
+    strip_prefix = "tink-master/",
+    urls = ["https://github.com/google/tink/archive/master.zip"],
+)
+
+load("@tink_base//:tink_base_deps.bzl", "tink_base_deps")
+
+tink_base_deps()
+
+load("@tink_base//:tink_base_deps_init.bzl", "tink_base_deps_init")
+
+tink_base_deps_init()
+
+http_archive(
+    name = "com_github_google_tink_go",
+    strip_prefix = "tink-master/go",
+    urls = ["https://github.com/google/tink/archive/master.zip"],
+)
+
+load("@com_github_google_tink_go//:tink_go_deps_init.bzl", "tink_go_deps_init")
+
+tink_go_deps_init()
+
+git_repository(
+    name = "com_github_google_differential_privacy",
+    commit = "8c3e89314c6d29dd9c01792122c2398da587d442",
+    remote = "https://github.com/google/differential-privacy.git",
+)
+
+git_repository(
+    name = "com_google_go_differential_privacy",
+    commit = "8c3e89314c6d29dd9c01792122c2398da587d442",
+    # Workaround from https://github.com/bazelbuild/bazel/issues/10062#issuecomment-642144553
+    patch_cmds = ["mv go/* ."],
+    remote = "https://github.com/google/differential-privacy.git",
+)
+
+load("@com_google_go_differential_privacy//:go_differential_privacy_deps.bzl", "go_differential_privacy_deps")
+
+go_differential_privacy_deps()
+
+git_repository(
+    name = "com_github_google_differential_privacy_privacy_on_beam",
+    commit = "8c3e89314c6d29dd9c01792122c2398da587d442",
+    remote = "https://github.com/google/differential-privacy.git",
+    strip_prefix = "privacy-on-beam/",
+)
+
+# gflags needed for glog.
+http_archive(
+    name = "com_github_gflags_gflags",
+    sha256 = "cfdba0f2f17e8b1ff75c98113d5080d8ec016148426abcc19130864e2952d7bd",
+    strip_prefix = "gflags-827c769e5fc98e0f2a34c47cef953cc6328abced",
+    urls = [
+        "https://github.com/gflags/gflags/archive/827c769e5fc98e0f2a34c47cef953cc6328abced.zip",
+    ],
+)
+
+# glog for logging, needed by distributed_point_functions.
+http_archive(
+    name = "com_github_google_glog",
+    sha256 = "8476f6b3be29b3ebecc7de058183d510acec6e6dcef35d416cc3ac407a3a5645",
+    strip_prefix = "glog-a79416bab739907a31a1e139540921ff0492f010",
+    urls = [
+        "https://github.com/google/glog/archive/a79416bab739907a31a1e139540921ff0492f010.zip",
+    ],
+)
+
+git_repository(
+    name = "com_github_google_distributed_point_functions",
+    commit = "ea175a91e6eda5b22392fdae82080eb9709cd0eb",
+    remote = "https://github.com/google/distributed_point_functions.git",
+)
+
+http_archive(
+    name = "com_github_google_googletest",
+    strip_prefix = "googletest-a4ab0abb93620ce26efad9de9296b73b16e88588",
+    urls = ["https://github.com/google/googletest/archive/a4ab0abb93620ce26efad9de9296b73b16e88588.zip"],
+)
+
+http_archive(
+    name = "io_bazel_rules_docker",
+    sha256 = "59d5b42ac315e7eadffa944e86e90c2990110a1c8075f1cd145f487e999d22b3",
+    strip_prefix = "rules_docker-0.17.0",
+    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.17.0/rules_docker-v0.17.0.tar.gz"],
+)
+
+load(
+    "@io_bazel_rules_docker//toolchains/docker:toolchain.bzl",
+    docker_toolchain_configure = "toolchain_configure",
+)
+
+docker_toolchain_configure(
+    name = "docker_config",
+    docker_path = "/usr/bin/docker",
+)
+
+load(
+    "@io_bazel_rules_docker//repositories:repositories.bzl",
+    container_repositories = "repositories",
+)
+
+container_repositories()
+
+load("@io_bazel_rules_docker//repositories:deps.bzl", container_deps = "deps")
+
+container_deps()
+
+load(
+    "@io_bazel_rules_docker//container:container.bzl",
+    "container_pull",
+)
+
+container_pull(
+    name = "bazel_image",
+    digest = "sha256:ace9881e6e9c5d48b5fd637321361aeffe54000265894a65f7d818dc1065bd80",
+    registry = "launcher.gcr.io",
+    repository = "google/bazel",
+    tag = "3.5.0",
+)
+
+container_pull(
+    name = "base_image",
+    registry = "gcr.io",
+    repository = "distroless/cc-debian11",
+    tag = "latest-amd64",  #prod-image
+    #tag = "debug",  #debug-image
+
+)
+
+container_pull(
+    name = "static_base",
+    # 'tag' is also supported, but digest is encouraged for reproducibility.
+    digest = "sha256:c070202f5ea785303a9f8cfc5f094d210336e3e0ef09806b2edcce3d5e223eb7",  #prod-image
+    #digest = "sha256:a17f6eadc08cb7a806f576dd7667b0f4355312ea77538e5d4692d6971d413897",  #debug-image
+    registry = "gcr.io",
+    repository = "distroless/static",
+)
