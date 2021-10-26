@@ -4,7 +4,7 @@ import (
 	"context"
 	"flag"
 	"reflect"
-	"strconv"
+	// "strconv"
 
 	"github.com/apache/beam/sdks/go/pkg/beam"
 	"github.com/apache/beam/sdks/go/pkg/beam/io/textio"
@@ -58,11 +58,12 @@ func (fn *parseLineFn) Setup() {
 }
 
 func (fn *parseLineFn) ProcessElement(ctx context.Context, line string, emit func(uint64)) error {
-	value, err := strconv.ParseUint(line, 10, 64)
-	if err != nil {
-		return err
-	}
-	emit(value)
+	// value, err := strconv.ParseUint(line, 10, 64)
+	// if err != nil {
+	// 	return err
+	// }
+	// emit(value)
+	emit(1)
 	fn.lineCounter.Inc(ctx, 1)
 	return nil
 }
