@@ -11,6 +11,7 @@ import (
 	"github.com/apache/beam/sdks/go/pkg/beam/log"
 	"github.com/apache/beam/sdks/go/pkg/beam/transforms/stats"
 	"github.com/apache/beam/sdks/go/pkg/beam/x/beamx"
+	"github.com/le0000000/simplesum/pipeline/simplecgo"
 
 	// The following packages are required to read files from GCS or local.
 	_ "github.com/apache/beam/sdks/go/pkg/beam/io/filesystem/gcs"
@@ -36,10 +37,11 @@ func main() {
 
 	scope := pipeline.Root()
 	lines := textio.ReadSdf(scope, *inputURI)
-	reshuffledLines := beam.Reshuffle(scope, lines)
 
-	values := beam.ParDo(scope, &parseLineFn{}, reshuffledLines)
-	sum := stats.Sum(scope, values)
+	values := beam.ParDo(scope, &parseLineFn{}, lines)
+	reshuffledValues := beam.Reshuffle(scope, values)
+
+	sum := stats.Sum(scope, reshuffledValues)
 
 	formatted := beam.ParDo(scope, formatResultFn, sum)
 	textio.Write(scope, *outputURI, formatted)
@@ -63,7 +65,8 @@ func (fn *parseLineFn) ProcessElement(ctx context.Context, line string, emit fun
 	// 	return err
 	// }
 	// emit(value)
-	emit(1)
+
+	emit(uint64(simplecgo.GetValue()))
 	fn.lineCounter.Inc(ctx, 1)
 	return nil
 }
